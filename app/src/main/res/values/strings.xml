@@ -1,0 +1,20 @@
+<resources>
+    <string name="app_name">ApexMoviesApp</string>
+    <string name="app_ws_movies_url">https://api.themoviedb.org/</string>
+    <string name="app_ws_api_key">503695767acad7d3a0bbd347e5293747</string>
+
+    <string name="preference_name">app_data</string>
+    <string name="preference_movie">movie</string>
+    <string name="preference_page">page</string>
+    <string name="preference_total_pages">total_pages</string>
+
+    <string name="search_btn_search">Search</string>
+    <string name="search_btn_submit">Submit</string>
+
+    <string name="movie_title">Title</string>
+    <string name="movie_overview">Overview</string>
+    <string name="movie_release">Release</string>
+    <string name="movie_average">Average</string>
+
+
+</resources>
