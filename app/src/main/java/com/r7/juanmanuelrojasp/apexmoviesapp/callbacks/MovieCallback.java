@@ -9,7 +9,6 @@ import java.util.ArrayList;
  */
 
 public interface MovieCallback {
-    void onMoviesReturned(ArrayList<Movie> movies);
-    void onMoviesCompleted(ArrayList<Movie> movies);
+    void onMoviesReturned(ArrayList<Movie> movies, int code);
     void onErrorResponse(String message);
 }

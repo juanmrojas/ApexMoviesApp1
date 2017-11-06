@@ -22,8 +22,6 @@ public class SearchActivity extends AppCompatActivity implements MovieView {
     private RecyclerView recycler;
     private Button btnSearch, btnSubmit;
     private EditText edtMovie;
-    private MoviePresenter presenter;
-    private ApexMoviesPreferences preferences;
     private RelativeLayout layout;
 
     @Override
@@ -54,19 +52,23 @@ public class SearchActivity extends AppCompatActivity implements MovieView {
     protected void onResume() {
         super.onResume();
         // here the SearchPresenter is initialized
-        presenter = new MoviePresenter(this);
+        MoviePresenter presenter = MoviePresenter.getInstance();
+        presenter.setView(this);
+        presenter.setListener();
+        presenter.init();
     }
 
     @Override
     protected void onStop() {
         super.onStop();
-        preferences = new ApexMoviesPreferences(this);
+        // case no valid because the system kept up the movies in memory
+        ApexMoviesPreferences preferences = new ApexMoviesPreferences(this);
         preferences.putStringPreferences(this.getString(R.string.preference_name),
                 this.getString(R.string.preference_movie), "");
         preferences.putIntPreferences(this.getString(R.string.preference_name),
                 this.getString(R.string.preference_page), 1);
         preferences.putIntPreferences(this.getString(R.string.preference_name),
-                this.getString(R.string.preference_total_pages), 1);
+                this.getString(R.string.preference_total_pages), 0);
     }
 
     @Override

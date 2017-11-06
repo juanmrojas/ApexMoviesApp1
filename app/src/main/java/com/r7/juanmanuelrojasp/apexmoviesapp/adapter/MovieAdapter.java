@@ -11,11 +11,12 @@ import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.r7.juanmanuelrojasp.apexmoviesapp.R;
-import com.r7.juanmanuelrojasp.apexmoviesapp.callbacks.MovieCallback;
+import com.r7.juanmanuelrojasp.apexmoviesapp.callbacks.MovieAdapterCallbacks;
 import com.r7.juanmanuelrojasp.apexmoviesapp.model.Movie;
-import com.r7.juanmanuelrojasp.apexmoviesapp.service.MovieService;
+import com.r7.juanmanuelrojasp.apexmoviesapp.presenter.MoviePresenter;
 import com.r7.juanmanuelrojasp.apexmoviesapp.utils.ApexMoviesPreferences;
 import com.r7.juanmanuelrojasp.apexmoviesapp.view.MovieActivity;
+import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
 
@@ -25,7 +26,7 @@ import java.util.ArrayList;
  */
 
 public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieViewHolder>
-        implements MovieCallback{
+        implements MovieAdapterCallbacks{
 
     private ArrayList<Movie> movies;
     private Context context;
@@ -60,7 +61,10 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieViewHol
                 view.getContext().startActivity(intent);
             }
         });
-
+        Picasso.with(holder.context)
+                .load(holder.context.getString(R.string.poster_api_url) + movie.getPosterPath())
+                .placeholder(R.drawable.no_poster)
+                .into(holder.imvMovie);
         preferences = new ApexMoviesPreferences(holder.context);
 
         /* that's why I implemented this code fragment. It validate if the
@@ -72,17 +76,16 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieViewHol
                     holder.context.getString(R.string.preference_page), 1);
 
             int totalPages = preferences.getIntPreferences(holder.context.getResources().getString(R.string.preference_name),
-                    holder.context.getString(R.string.preference_total_pages), 0);
+                    holder.context.getString(R.string.preference_total_pages), 1);
 
             // this validation serves to control if there are more movies to add;
             // when page is greater than total pages, the request is not performed
             if(page <= totalPages) {
 
-                MovieService service = new MovieService(holder.context, this);
-                service.setMoviesInstance(movies);
-                service.getListMovies(holder.context,
-                        preferences.getStringPreferences(holder.context.getString(R.string.preference_name),
-                                holder.context.getString(R.string.preference_movie), ""), 1);
+                MoviePresenter presenter = MoviePresenter.getInstance();
+                presenter.setListener(this);
+                presenter.getListMovies(holder.context,
+                        movies, 1);
             }
         }
     }
@@ -93,20 +96,10 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieViewHol
     }
 
     @Override
-    public void onMoviesReturned(ArrayList<Movie> movies) {
-
-    }
-
-    @Override
     public void onMoviesCompleted(ArrayList<Movie> movies) {
         // this line re creates the adapter and notify to the recycler view
         // that new movies where added; it is not necessary instantiate the MovieAdapter again
         notifyDataSetChanged();
-    }
-
-    @Override
-    public void onErrorResponse(String message) {
-
     }
 
     class MovieViewHolder extends RecyclerView.ViewHolder{
@@ -116,7 +109,7 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieViewHol
         private CardView cardMovie;
         private Context context;
 
-        public MovieViewHolder(View itemView) {
+        private MovieViewHolder(View itemView) {
             super(itemView);
             context = itemView.getContext();
             cardMovie = (CardView)itemView.findViewById(R.id.cardMovie);

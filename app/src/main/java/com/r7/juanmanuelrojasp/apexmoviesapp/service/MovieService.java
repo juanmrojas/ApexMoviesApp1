@@ -59,19 +59,20 @@ public class MovieService {
         this.movies = movies;
     }
 
-    public void getListMovies(Context context, String movie, int code){
+    public void getListMovies(Context context, int code){
 
         //api_key=503695767acad7d3a0bbd347e5293747&language=en-US&query=Avengers&page=1&include_adult=false
-
-        int page = preferences.getIntPreferences(context.getString(R.string.preference_name),
-                context.getString(R.string.preference_page), 1);
-
-        preferences.putStringPreferences(context.getString(R.string.preference_name),
-                context.getString(R.string.preference_movie), movie);
 
         // the Observable pattern was implemented with the intention of
         // perform operations in a secondary thread; it avoids that the UI thread being blocked
         // during the consumption of the end point
+
+        int page = preferences.getIntPreferences(context.getResources().getString(R.string.preference_name),
+                context.getString(R.string.preference_page), 1);
+
+        String movie = preferences.getStringPreferences(context.getResources().getString(R.string.preference_name),
+                context.getString(R.string.preference_movie), "");
+
         service.getMoviesList(context.getResources().getString(R.string.app_ws_api_key),"en-US",
                 movie, page, false)
                 .observeOn(AndroidSchedulers.mainThread())
@@ -92,12 +93,16 @@ public class MovieService {
                 // here we have two scenarios; when the app execute the end point for first time
                 // and que the response to be assigned to an ArrayList. But, when is just necessary
                 // add more items to the ArrayList, I used the addAll method.
-                if(code == 0)
+                if(code == 0) {
                     movies = moviesRetrofit.getMovies();
+                    int pages = moviesRetrofit.getPages();
+                    preferences.putIntPreferences(
+                            context.getString(R.string.preference_name),
+                            context.getString(R.string.preference_total_pages),
+                            pages);
+                }
                 else
                     movies.addAll(moviesRetrofit.getMovies());
-                int pages = moviesRetrofit.getPages();
-
                 // stored these values because are relevant to control
                 // the flow execution
                 preferences.putIntPreferences(
@@ -106,21 +111,7 @@ public class MovieService {
                         preferences.getIntPreferences(context.getString(R.string.preference_name),
                                 context.getString(R.string.preference_page), 1) + 1);
 
-                preferences.putIntPreferences(
-                        context.getString(R.string.preference_name),
-                        context.getString(R.string.preference_total_pages),
-                        pages);
-
-                switch (code){
-                    case 0:
-                        // in this case the service sends the information to the presenter
-                        listener.onMoviesReturned(movies);
-                        break;
-                    case 1:
-                        // but, when the request comes from MovieAdapter, it means that
-                        // the response will be redirected to itself and will be received in onMovieCompleted method
-                        listener.onMoviesCompleted(movies);
-                }
+                listener.onMoviesReturned(movies, code);
             }
 
             @Override

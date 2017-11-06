@@ -8,6 +8,8 @@
     <string name="preference_page">page</string>
     <string name="preference_total_pages">total_pages</string>
 
+    <string name="poster_api_url">https://image.tmdb.org/t/p/w500</string>
+
     <string name="search_btn_search">Search</string>
     <string name="search_btn_submit">Submit</string>
 
